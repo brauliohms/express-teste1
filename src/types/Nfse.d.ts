@@ -1,3 +1,15 @@
+export interface INfseTable {
+  id: number;
+  razao_social_prestador: string;
+  razao_social_tomador: string;
+  numero_nfse: string;
+  data_nfse: string;
+  valor_servicos: number;
+  pdf_nfse?: string;
+  xml_nfse?: string;
+  log_integracao?: string;
+}
+
 export interface INfse {
   id: number;
   data_importacao: string;

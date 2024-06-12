@@ -49,3 +49,14 @@ routerNfseList.get("/nao-conferidos/:id", async (req, res) => {
     res.status(500).send(error);
   }
 });
+
+routerNfseList.get("/conferidosall/:id", async (req, res) => {
+  const user_id = +req.params.id;
+  const columns = ["*"];
+  try {
+    const dados = await selectNfseData(knexConnector, columns, user_id, true);
+    res.status(200).send(dados);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
