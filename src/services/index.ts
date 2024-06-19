@@ -1,1 +1,0 @@
-export { selectNfseData } from "./selectNfseData";

@@ -1,39 +1,51 @@
 # Use a lightweight Node.js image with TypeScript support
-FROM node:alpine AS builder
+FROM node:lts-alpine AS base
 
-# Set working directory
+# Install dependencies only when needed
+FROM base AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json build.ts tsconfig*.json ./
+# Install dependencies based on the preferred package manager
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the project files
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN \
+  if [ -f yarn.lock ]; then yarn run build; \
+  elif [ -f package-lock.json ]; then npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 
-# Build the TypeScript project (if necessary)
-RUN npm run build
-
-# Switch to a smaller runtime image for production
-FROM node:alpine
-
-# Set working directory
+# Production image, copy all the files and run express
+FROM base AS runner
 WORKDIR /app
 
-# Copy production-ready project files
-COPY . .
+ENV NODE_ENV production
 
-# Expose the port your application listens on
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 express
+
+COPY --from=builder --chown=express:nodejs /app/dist ./dist
+COPY --from=builder --chown=express:nodejs /app/node_modules ./node_modules
+COPY --chown=express:nodejs package.json ./
+
+USER express
+
 EXPOSE 4000
 
-# Installing pm2 globally
-# RUN npm install pm2 -g
-
-# Starting our application
-# CMD pm2 start process.yml && tail -f /dev/null
+ENV API_PORT 4000
 
 # Start the application
 CMD [ "npm", "start" ]
-

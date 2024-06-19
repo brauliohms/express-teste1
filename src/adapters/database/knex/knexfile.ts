@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { Knex } from "knex";
+import { Knex, knex } from "knex";
 
 const knexConfig: Knex.Config = {
-  client: process.env.CLIENT,
+  client: process.env.CLIENT as string,
   connection: {
     filename: process.env.FILENAME || "",
     host: process.env.DB_HOST || "",
@@ -14,4 +14,5 @@ const knexConfig: Knex.Config = {
   pool: { min: 0, max: 7 },
 };
 
-export const knexConnector: Knex = require("knex")(knexConfig);
+// TODO: typar o Knex
+export const conexao: Knex = knex(knexConfig);

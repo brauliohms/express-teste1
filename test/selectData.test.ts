@@ -1,6 +1,6 @@
+import { INfse } from "../src/core/nfse/Nfse";
 import { knexConnector } from "../src/database";
 import { selectNfseData } from "../src/services/selectNfseData/selectNfseData";
-import { INfse } from "../src/types/Nfse";
 
 test("deve verificar se recebeu dados", async () => {
   // const columns = ["id", "numero_nfse", "cnpj_prestador"];
