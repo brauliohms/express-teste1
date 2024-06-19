@@ -13,13 +13,18 @@ import {
 } from "./controllers";
 import { DeletarNfse, GetUserNfse, InserirNfse } from "./core/nfse";
 
-// Inicia Servidor Express ------------------------------------------
+// Configuração Ambiente ----------------------------------------------
 dotenv.config();
 const porta = process.env.API_PORT ?? 4000;
+const logger = process.env.LOGGER_LEVELINFO ?? "short";
+const environment = process.env.NODE_ENV ?? "";
+console.log(`🟢 ENVIRONMENT: ${environment} 🟢`);
+
+// Inicia Servidor Express ------------------------------------------
 const app = express();
 
 // Configuração Básica ----------------------------------------------
-app.use(morgan("dev"));
+app.use(morgan(logger));
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
